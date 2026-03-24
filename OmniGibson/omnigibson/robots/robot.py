@@ -1004,8 +1004,9 @@ class Robot(USDObject, GymObservable):
         super()._load_state(state=state)
 
         # Load controllers
+        controller_groups = state.get("controller_groups", {}) if isinstance(state, dict) else {}
         for controller_name, (group_key, controller_idx) in self._controllers.items():
-            controller_state = state["controller_groups"].get(controller_name)
+            controller_state = controller_groups.get(controller_name)
             if controller_state is not None:
                 ControllerView.load_state(group_key, controller_idx, controller_state)
 

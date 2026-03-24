@@ -1,4 +1,5 @@
 from omnigibson.envs.data_wrapper import DataCollectionWrapper, DataPlaybackWrapper
+from omnigibson.envs.rbs_data_playback_wrapper import RBSDataPlaybackWrapper
 from omnigibson.envs.metrics_wrapper import MetricsWrapper, EnvMetric
 from omnigibson.envs.env_base import Environment
 from omnigibson.envs.env_wrapper import REGISTERED_ENV_WRAPPERS, EnvironmentWrapper, create_wrapper
@@ -14,4 +15,5 @@ __all__ = [
     "EnvironmentWrapper",
     "REGISTERED_ENV_WRAPPERS",
     "VectorEnvironment",
+    "RBSDataPlaybackWrapper",
 ]

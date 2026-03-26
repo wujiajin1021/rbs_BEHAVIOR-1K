@@ -225,8 +225,40 @@ class DataWrapper(EnvironmentWrapper):
                 for mod, traj_mod_data in dat.items():
                     obs_grp.create_dataset(mod, data=th.stack(traj_mod_data, dim=0).cpu(), **self.compression)
             else:
-                traj_data = th.stack(dat, dim=0) if isinstance(dat[0], th.Tensor) else th.tensor(dat)
-                traj_grp.create_dataset(k, data=traj_data, **self.compression)
+                if (
+                    k == "gripper_contact_prim_paths_lr"
+                    and isinstance(dat[0], (list, tuple))
+                    and len(dat[0]) == 2
+                ):
+                    rows = np.asarray(
+                        [["" if v is None else str(v) for v in row] for row in dat],
+                        dtype=object,
+                    )
+                    traj_grp.create_dataset(
+                        k,
+                        data=rows,
+                        dtype=h5py.string_dtype(encoding="utf-8"),
+                        **self.compression,
+                    )
+                elif isinstance(dat[0], th.Tensor):
+                    traj_data = th.stack(dat, dim=0)
+                    traj_grp.create_dataset(k, data=traj_data, **self.compression)
+                elif isinstance(dat[0], str):
+                    traj_grp.create_dataset(k, data=dat, dtype=h5py.string_dtype(encoding="utf-8"), **self.compression)
+                elif isinstance(dat[0], (list, tuple, dict)):
+                    serialized = [json.dumps(v, cls=TorchEncoder) for v in dat]
+                    traj_grp.create_dataset(
+                        k, data=serialized, dtype=h5py.string_dtype(encoding="utf-8"), **self.compression
+                    )
+                else:
+                    try:
+                        traj_data = th.tensor(dat)
+                        traj_grp.create_dataset(k, data=traj_data, **self.compression)
+                    except Exception:
+                        serialized = [json.dumps(v, cls=TorchEncoder) for v in dat]
+                        traj_grp.create_dataset(
+                            k, data=serialized, dtype=h5py.string_dtype(encoding="utf-8"), **self.compression
+                        )
 
         return traj_grp
 
